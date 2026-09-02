@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tiny-cli-table"
+version = "1.0.0"
+description = "A beautiful zero-dependency Python CLI table renderer with multiple styles, alignment, colors, and nested tables."
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "MIT" }
+authors = [
+    { name = "Hussain Al-Saibai", email = "hussain.alsaibai@gmail.com" },
+]
+keywords = ["cli", "table", "terminal", "ascii", "markdown", "rendering", "console", "tui"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Terminals",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/hussain-alsaibai/tiny-cli-table"
+Repository = "https://github.com/hussain-alsaibai/tiny-cli-table"
+Issues = "https://github.com/hussain-alsaibai/tiny-cli-table/issues"
+
+[tool.setuptools]
+py-modules = ["tiny_table"]
+
+[tool.setuptools.package-data]
+"*" = ["README.md", "LICENSE"]
