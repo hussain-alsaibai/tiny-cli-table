@@ -17,8 +17,8 @@ import io
 import re
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-__all__ = ["Table", "TinyTableError", "enable_color", "bold", "color", "SPAN"]
-__version__ = "1.0.0"
+__all__ = ["Table", "TinyTableError", "enable_color", "bold", "color", "SPAN", "to_csv"]
+__version__ = "1.1.0"
 
 
 # ---------------------------------------------------------------------------
@@ -589,6 +589,102 @@ class Table:
     def to_string(self) -> str:
         """Alias for :meth:`render`."""
         return self.render()
+
+    def to_csv(self) -> str:
+        """Export the table as CSV (RFC 4180 with quoting).
+
+        Cells are coerced via :func:`_stringify` (matching render order),
+        sorted according to ``sort_by`` / ``sort_desc`` if set, then
+        serialized with the ``csv`` module's default quote style. Use
+        ``set -`` redirection to pipe to a downstream tool that supports
+        CSV.
+
+        The CSV carries the column header on the first line. All cells
+        (including ``None``, ``bool``, list, dict values) are normalized
+        before writing — boolean values become ``"True"`` / ``"False"``
+        so Excel/pandas parse them correctly.
+
+        .. versionadded:: 1.1.0
+        """
+        import csv
+        import io
+
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(self.headers)
+        for row in self._render_rows():
+            out = []
+            for i, _c in enumerate(self._columns):
+                text = row[i] if i < len(row) else ""
+                # strip ANSI for clean CSV output
+                text = _ANSI_RE.sub("", str(text) if text is not SPAN else "")
+                out.append(text)
+            writer.writerow(out)
+        return buf.getvalue()
+
+    def auto_color_columns_by_name(
+        self,
+        *,
+        positive: str = "32",  # green
+        negative: str = "31",  # red
+        warning: str = "33",   # yellow
+        apply_to: Optional[Sequence[str]] = None,
+    ) -> None:
+        """Heuristic column colouring for numeric / status columns.
+
+        Walks every column and:
+
+        * if values are numeric (``int``/``float`` after stringifying),
+          colours negative values with ``negative`` and positive with
+          ``positive``.
+        * if values look boolean (``"True"`` / ``"False"`` or ``True`` /
+          ``False``), colours ``False`` with ``negative``.
+        * if values look like status (``"ok"``, ``"warn"``, ``"error"``,
+          ``"fail"``), colours ``warn``/``error``/``fail`` with
+          ``warning``/``negative``.
+
+        Args:
+            positive: ANSI code used for "good" cells.
+            negative: ANSI code used for "bad" cells.
+            warning: ANSI code used for "concerning" cells.
+            apply_to: Only color these column names. ``None`` means all.
+
+        .. versionadded:: 1.1.0
+        """
+        targets = (
+            set(apply_to) if apply_to is not None
+            else {c.name for c in self._columns}
+        )
+        for col in self._columns:
+            if col.name not in targets:
+                continue
+            idx = self._column_index(col.name)
+            positives = 0
+            negatives = 0
+            for row in self._rows:
+                if idx >= len(row):
+                    continue
+                text = str(row[idx])
+                if text.lstrip("-").replace(".", "", 1).isdigit():
+                    val = float(text)
+                    if val < 0:
+                        negatives += 1
+                    elif val > 0:
+                        positives += 1
+            if negatives > positives:
+                col.color = negative
+            elif positives > 0 and negatives == 0:
+                col.color = positive
+            else:
+                # look at status-like strings
+                lowered = [
+                    str(row[idx]).lower()
+                    for row in self._rows if idx < len(row)
+                ]
+                if any(v in ("error", "fail", "failed") for v in lowered):
+                    col.color = negative
+                elif any(v in ("warn", "warning") for v in lowered):
+                    col.color = warning
 
 
 # ---------------------------------------------------------------------------

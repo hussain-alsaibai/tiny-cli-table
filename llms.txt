@@ -1,0 +1,73 @@
+# tiny-cli-table
+
+> A beautiful, zero-dependency Python CLI table renderer.
+> Single file, ~700 lines, stdlib only.
+
+## What it is
+The smallest way to render beautiful terminal tables in Python without
+pulling in `tabulate`, `prettytable`, or `rich`. Ships eight box-drawing
+styles, alignment, colors, alternating row stripes, conditional row
+colouring, column spanning, nested tables, sortable columns, truncation,
+CSV export, and heuristic auto-colouring for numeric / status columns.
+
+## When to use it
+- You're rendering tables in a Python CLI and don't want a 50KB dependency.
+- You want a single file you can vendor or drop into any project.
+- You need output to stdout/logs/Markdown/CSV from the same table object.
+- You want a `Table` that visibly styles for "ok/error/warn" status words.
+
+## When NOT to use it
+- You need HTML / LaTeX / CSV-with-quote-styles export — use `tabulate`.
+- You need interactive TUI widgets — use `rich`.
+- You need HTML rendering — use `pandas.to_html()` or `tabulate`.
+
+## Public API
+- `Table(headers=None, rows=None, style="fancy", align="left", width=None, max_width=None, header_style="1;36", row_colors=("","90"), row_color=None, sort_by=None, sort_desc=False)`
+  - `add_row(row)` — accept list, tuple, dict, namedtuple, dataclass
+  - `add_column(name, align=None, width=None, color=None, sort_key=None)`
+  - `set_column_style(name, **overrides)`
+  - `sort(column, descending=False)` — numeric-aware natural sort
+  - `render()` / `to_string()` — render to string
+  - `print()` — render and print to stdout
+  - `to_csv()` — RFC 4180 CSV; ANSI-stripped; respects sort_by/sort_desc
+  - `auto_color_columns_by_name(*, positive="32", negative="31", warning="33", apply_to=None)` — heuristic colour for numeric / boolean / status columns
+  - `Table.SPAN` — sentinel for column-spanning cells
+  - `__str__` aliases `render()`; `__repr__` returns shape summary
+
+- Module helpers:
+  - `enable_color(bool)` — toggle ANSI globally
+  - `bold(text)`, `color(text, code="36")` — formatters
+  - `SPAN` — column-span sentinel
+  - `TinyTableError` — single error class
+
+## Styles
+classic, fancy (default), rounded (alias), double, grid, compact, simple, markdown — set via `style=` constructor arg.
+
+## Row types accepted
+list, tuple, dict, namedtuple, dataclass. Columns inferred from first dict / dataclass if `headers=` is None.
+
+## Booleans render as ✓ / ✗; float trims trailing zeros; None renders as empty.
+
+## Version
+1.1.0 (2026-09-16) — adds `to_csv()` and `auto_color_columns_by_name()`.
+1.0.0 (2026-09-02) — initial release.
+
+## Common pitfalls
+- Style strings must be lowercase.
+- `row_color` callback wins over `row_colors` stripe pair.
+- `set_column_style` raises `TinyTableError` if the column is missing.
+- `Table.SPAN` cell consumes the FOLLOWING columns, not the previous one (consumed-columns skip rendering position).
+- Sorting is numeric-aware; "10" sorts after "2".
+
+## Integration with OpenClaw ecosystem
+- `tiny-cli` — passes flag-table renders straight to stdout.
+- `tiny-router` — emits request/response tables for debugging.
+- `tiny-log` — formats log rows as a table for `--format table` mode.
+- `tiny-cost-tracker` — uses `auto_color_columns_by_name` to flag over-budget calls in CLI dashboards.
+- `tiny-budget-ledger` — `summary()` output pairs nicely with a styled table.
+
+## Installation
+```bash
+pip install tiny-cli-table
+# or vendor the single file (tiny_table.py)
+```

@@ -613,5 +613,83 @@ class TestInteractiveMode(unittest.TestCase):
         self.assertLess(carol_pos, bob_pos)
 
 
+class TestCsvExport(unittest.TestCase):
+    def test_csv_basic(self) -> None:
+        t = Table(headers=["a", "b"], rows=[[1, 2], [3, 4]], style="grid")
+        csv = t.to_csv()
+        self.assertIn("a,b", csv)
+        self.assertIn("1,2", csv)
+        self.assertIn("3,4", csv)
+        lines = csv.strip().splitlines()
+        self.assertEqual(len(lines), 3)
+
+    def test_csv_with_sort(self) -> None:
+        t = Table(headers=["name", "score"],
+                  rows=[["bob", 30], ["alice", 25], ["carol", 41]],
+                  sort_by="score")
+        lines = t.to_csv().strip().splitlines()
+        self.assertEqual(lines[0], "name,score")
+        self.assertEqual(lines[1], "alice,25")
+        self.assertEqual(lines[2], "bob,30")
+        self.assertEqual(lines[3], "carol,41")
+
+    def test_csv_strips_ansi(self) -> None:
+        t = Table(headers=["x"], rows=[["plain"]], style="grid")
+        t.set_column_style("x", color="31")
+        csv = t.to_csv()
+        self.assertNotIn("\x1b[", csv)
+        self.assertIn("plain", csv)
+
+    def test_csv_handles_bool_and_none(self) -> None:
+        # tiny_table._stringify renders bool as ✓ / ✗ — CSV mirrors that.
+        t = Table(headers=["k", "v"],
+                  rows=[["a", True], ["b", False], ["c", None]])
+        csv = t.to_csv()
+        # header + 3 data rows
+        self.assertEqual(len(csv.strip().splitlines()), 4)
+        # True row → ✓, False row → ✗, None row → empty
+        self.assertIn("a,✓", csv)
+        self.assertIn("b,✗", csv)
+        self.assertIn("c,", csv)
+
+
+class TestAutoColor(unittest.TestCase):
+    def test_negative_numeric(self) -> None:
+        t = Table(headers=["name", "delta"],
+                  rows=[["a", -3], ["b", 1], ["c", -1]])
+        t.auto_color_columns_by_name(apply_to=["delta"])
+        idx = t._column_index("delta")
+        self.assertEqual(t._columns[idx].color, "31")
+
+    def test_positive_numeric(self) -> None:
+        t = Table(headers=["name", "delta"],
+                  rows=[["a", 3], ["b", 1], ["c", 2]])
+        t.auto_color_columns_by_name(apply_to=["delta"])
+        idx = t._column_index("delta")
+        self.assertEqual(t._columns[idx].color, "32")
+
+    def test_status_words_error(self) -> None:
+        t = Table(headers=["name", "status"],
+                  rows=[["a", "ok"], ["b", "error"], ["c", "ok"]])
+        t.auto_color_columns_by_name(apply_to=["status"])
+        idx = t._column_index("status")
+        self.assertEqual(t._columns[idx].color, "31")
+
+    def test_status_words_warning(self) -> None:
+        t = Table(headers=["name", "status"],
+                  rows=[["a", "ok"], ["b", "warn"], ["c", "ok"]])
+        t.auto_color_columns_by_name(apply_to=["status"])
+        idx = t._column_index("status")
+        self.assertEqual(t._columns[idx].color, "33")
+
+    def test_apply_to_filter(self) -> None:
+        t = Table(headers=["name", "delta", "tag"],
+                  rows=[["a", -1, "x"], ["b", -1, "y"]])
+        t.auto_color_columns_by_name(apply_to=["delta"])
+        self.assertEqual(t._columns[t._column_index("delta")].color, "31")
+        # tag untouched
+        self.assertIsNone(t._columns[t._column_index("tag")].color)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

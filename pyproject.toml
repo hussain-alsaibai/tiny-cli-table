@@ -4,8 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tiny-cli-table"
-version = "1.0.0"
-description = "A beautiful zero-dependency Python CLI table renderer with multiple styles, alignment, colors, and nested tables."
+version = "1.1.0"
+description = "A beautiful zero-dependency Python CLI table renderer with multiple styles, alignment, colors, nested tables, CSV export, and heuristic auto-colouring."
+readme = "README.md"
+requires-python = ">=3.7"
 readme = "README.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
