@@ -8,8 +8,6 @@ version = "1.1.0"
 description = "A beautiful zero-dependency Python CLI table renderer with multiple styles, alignment, colors, nested tables, CSV export, and heuristic auto-colouring."
 readme = "README.md"
 requires-python = ">=3.7"
-readme = "README.md"
-requires-python = ">=3.7"
 license = { text = "MIT" }
 authors = [
     { name = "Hussain Al-Saibai", email = "hussain.alsaibai@gmail.com" },
