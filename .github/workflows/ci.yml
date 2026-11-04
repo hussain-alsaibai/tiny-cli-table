@@ -1,6 +1,9 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 permissions:
   contents: read
@@ -19,5 +22,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install
         run: pip install -e . pytest
+      - name: Unit tests
+        run: python -m pytest test_tiny_table.py -v
+
+  test-python37:
+    # setup-python has no 3.7 build for ubuntu-24.04, and the
+    # ubuntu-20.04 runner images that did have one are retired. The
+    # official python:3.7 image is still published, so the 3.7 job runs
+    # inside that container instead.
+    runs-on: ubuntu-latest
+    container: python:3.7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: pip install pytest
       - name: Unit tests
         run: python -m pytest test_tiny_table.py -v
