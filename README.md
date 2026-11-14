@@ -61,7 +61,8 @@ in two seconds**.
 
 ```bash
 # pip (once published)
-pip install tiny-cli-table
+# From GitHub (recommended -- not yet on PyPI)
+pip install git+https://github.com/hussain-alsaibai/tiny-cli-table.git
 
 # OR just copy the single file — it's intentionally self-contained:
 curl -O https://raw.githubusercontent.com/hussain-alsaibai/tiny-cli-table/main/tiny_table.py
