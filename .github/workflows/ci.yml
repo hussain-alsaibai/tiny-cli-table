@@ -10,6 +10,8 @@ permissions:
 
 jobs:
   test:
+    # ubuntu-latest moved to 26.04, which has no setup-python build of
+    # 3.8/3.9 - those matrix rows die before a test runs.
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -30,6 +32,8 @@ jobs:
     # ubuntu-20.04 runner images that did have one are retired. The
     # official python:3.7 image is still published, so the 3.7 job runs
     # inside that container instead.
+    # ubuntu-latest moved to 26.04, which has no setup-python build of
+    # 3.8/3.9 - those matrix rows die before a test runs.
     runs-on: ubuntu-24.04
     container: python:3.7
     steps:

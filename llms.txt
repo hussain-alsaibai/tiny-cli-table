@@ -67,7 +67,9 @@ list, tuple, dict, namedtuple, dataclass. Columns inferred from first dict / dat
 - `tiny-budget-ledger` — `summary()` output pairs nicely with a styled table.
 
 ## Installation
+NOTE: unpublished on PyPI -- the bare name is not on the index, so the `pip install <name>` form 404s. The URL below is the install.
+
 ```bash
-pip install tiny-cli-table
+pip install "tiny-cli-table @ git+https://github.com/hussain-alsaibai/tiny-cli-table.git"
 # or vendor the single file (tiny_table.py)
 ```
